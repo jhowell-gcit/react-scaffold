@@ -1,5 +1,7 @@
 import { useState } from "react";
 import "./App.css";
+import { ApiService } from "./services/api/api-services";
+import { Box, Button, TextField } from "@mui/material";
 
 function App() {
   const [code, setCode] = useState("");
@@ -7,47 +9,47 @@ function App() {
   const [message, setMessage] = useState("");
   const [resErr, setResErr] = useState("");
 
-  let handleSubmit = async (e) => {
+  let getData = async (e) => {
     e.preventDefault();
-    try {
-      let res = await fetch("/api/v1/sample-path?" + (code ? "sampleCode=" + code : "") + (name ? "&sampleName=" + name : ""), {
-        method: "GET",
-      })
-      let resJson = await res.json();
+    ApiService.getRequest(code, name).then((res) => {
       if (res.status === 200) {
-        setCode("");
-        setName("");
         setResErr(false)
       } else {
         setResErr(true)
       }
-      setMessage(JSON.stringify(resJson, null, 2));
-    } catch (err) {
-      console.log(err);
-    }
+      setCode("");
+      setName("");
+      setMessage(JSON.stringify(res.data, null, 2));
+    });
   }
 
   return (
-    <div className="App">
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="sampleCode"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="sampleName"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <button type="submit">GET</button>
-
-        <div className="message" style={resErr ? { color:"red" } : { color:"green" }}>{message ? <pre>{message}</pre> : null}</div>
+    <Box className="App">
+      <form onSubmit={getData}>
+        <Box>
+          <TextField
+            type="text"
+            label="sampleCode"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </Box>
+        <Box mt={2}>
+          <TextField
+            type="text"
+            label="sampleName"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Box>
+        <Box mt={3}>
+          <Button variant="contained" type="submit">GET</Button>
+        </Box>
+        <Box mt={4}>
+          <Box className="message" color={resErr ? "red" : "green"}>{message ? <pre>{message}</pre> : null}</Box>
+        </Box>
       </form>
-    </div>
+    </Box>
   );
 }
 
